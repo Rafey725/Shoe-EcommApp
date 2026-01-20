@@ -1,0 +1,17 @@
+# deps
+node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Runtime data (optional)
+uploads/
+tmp/
+
+# Env files (ignore all, allow examples)
+.env
+.env.*
+!.env.example
+!.env.*.example
