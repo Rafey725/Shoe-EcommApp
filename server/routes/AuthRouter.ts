@@ -19,16 +19,18 @@ router.get('/me', async (req, res) => {
     const token = req.headers.authorization.split(' ')[1]
     try {
         if (!process.env.JWT_SECRET) return res.status(500).json({ message: 'Server error' })
-        const decoded = jwt.verify(token, process.env.JWT_SECRET) as { email: string, iat?: number, exp?: number }
-        if (!decoded.email) return res.status(401).json({ message: 'Invalid token' })
-        const user = await db.select().from(users).where(eq(users.email, decoded.email))
+        const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: number, iat?: number, exp?: number }
 
-        setTimeout(() => {
+        if (!decoded.userId) return res.status(401).json({ message: 'INVALID_TOKEN' })
+        const user = await db.select().from(users).where(eq(users.id, decoded.userId))
+
+        // setTimeout(() => {
             res.status(200).json({ message: 'User data fetched successfully', data: { name: user[0].name, email: user[0].email } })
-        }, 10000)
+        // }, 10000)
     } catch (err) {
+        console.log('Error from getting me request: ', err);
         console.log('Invalid or expired token');
-        res.status(401).json({ message: 'Invalid token' })
+        res.status(401).json({ message: 'INVALID_TOKEN' })
     }
 })
 
@@ -99,7 +101,7 @@ router.post('/google_signin', async (req, res) => {
             .where(eq(users.provider_user_id, sub));
         if (googleUser.length > 0) {
             const token = createAccessToken(googleUser[0].id)
-            return res.status(200).json({ message: 'User authorized', token })
+            return res.status(200).json({ message: 'User authorized', token: token })
         }
 
         // Try link by email
@@ -114,7 +116,7 @@ router.post('/google_signin', async (req, res) => {
                 .where(eq(users.id, emailUser[0].id))
                 .returning();
             const token = createAccessToken(updatedUser.id)
-            return res.status(200).json({ message: "User authorized", token });
+            return res.status(200).json({ message: "User authorized", token: token });
         }
 
         // Create new Google user

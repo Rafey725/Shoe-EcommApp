@@ -17,7 +17,7 @@ import useAuthPost from "@/hooks/useAuthPost";
 const { width, height } = Dimensions.get('window')
 const SCALE = width / 375;
 
-export default function Signup({ onGoSignin }: { onGoSignin: () => void }) {
+export default function Signup() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('')
@@ -104,22 +104,12 @@ export default function Signup({ onGoSignin }: { onGoSignin: () => void }) {
         <Pressable onPress={handleSubmit} style={styles.signupButton}>
           <Text style={styles.signupText}>Sign In</Text>
         </Pressable>
-
-        <Pressable style={styles.googleButton}>
-          <Image
-            source={require('@/assets/google-logo.png')}
-            style={styles.googleIcon}
-          />
-
-          <Text style={styles.googleText}>Sign in with google</Text>
-        </Pressable>
-
       </View>
       <View style={{ display: 'flex', flexDirection: 'row', marginTop: 30 }}>
         <Text style={styles.footerText}>
           Already Have An Account?
         </Text>
-        <Pressable onPress={onGoSignin}>
+        <Pressable onPress={() => router.back()}>
           <Text style={styles.signinText}> Sign In</Text>
         </Pressable>
       </View>
@@ -147,14 +137,14 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   title: {
-    fontSize: 28 *SCALE,
+    fontSize: 28 * SCALE,
     fontWeight: "700",
     color: "#111",
     marginBottom: 6,
     textAlign: 'center'
   },
   subtitle: {
-    fontSize: 16 *SCALE,
+    fontSize: 16 * SCALE,
     color: "#8E8E8E",
     marginBottom: 35,
     textAlign: 'center'
@@ -164,7 +154,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   label: {
-    fontSize: 13 *SCALE,
+    fontSize: 13 * SCALE,
     fontWeight: "500",
     color: "#222",
     marginBottom: 8,
@@ -175,7 +165,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    fontSize: 14 *SCALE,
+    fontSize: 14 * SCALE,
     borderWidth: 2,
     borderColor: '#3833330c',
     elevation: 0,
@@ -201,7 +191,7 @@ const styles = StyleSheet.create({
   },
   signupText: {
     color: "#fff",
-    fontSize: 15 *SCALE,
+    fontSize: 15 * SCALE,
     fontWeight: "600",
   },
   googleButton: {
@@ -223,11 +213,11 @@ const styles = StyleSheet.create({
   },
   googleText: {
     color: "#000",
-    fontSize: 14 *SCALE,
+    fontSize: 14 * SCALE,
     fontWeight: "500",
   },
   footerText: {
-    fontSize: 12 *SCALE,
+    fontSize: 12 * SCALE,
     color: "#8E8E8E",
   },
   signinText: {

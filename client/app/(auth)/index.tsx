@@ -30,12 +30,7 @@ import useGoogleAuth from "@/hooks/useGoogleAuth";
 const { width, height } = Dimensions.get('window')
 const SCALE = width / 375;
 
-export default function Signin({
-  onGoSignup,
-  onGoRecovery }: {
-    onGoSignup: () => void,
-    onGoRecovery: () => void
-  }) {
+export default function Signin() {
 
   // Configure google sign in
   GoogleSignin.configure({
@@ -49,7 +44,6 @@ export default function Signin({
   const [password, setPassword] = useState("");
   const [focusedField, setFocusedField] = useState('')
   const [error, setError] = useState('')
-  const [dataState, setdata] = useState()
 
   const { data, mutateAsync: loginMutateAsync, isPending, isError } = useAuthPost();
   const { mutateAsync: googleMutateAsync } = useGoogleAuth()
@@ -74,7 +68,7 @@ export default function Signin({
 
       setEmail("");
       setPassword("");
-      router.replace('/')
+      router.replace('/Home')
     } catch (err) {
       console.log('Something is wrong', err);
     }
@@ -88,20 +82,17 @@ export default function Signin({
       if (isSuccessResponse(res)) {
         const response = await googleMutateAsync({ endpoint: 'google_signin', idToken: res.data.idToken })
         const data = await response.json()
+        console.log(data.message);
+
         if (data.token) {
           SecureStore.setItemAsync('token', data.token)
           console.log('Token stored');
         }
 
-        console.log(data.message);
         if (response.status === 401) { return setError('Invalid email or password') }
         else { setError('') }
-
-        // dispatch(setUserData({ name: data.name, email: data.email }))
-
-        setEmail("");
-        setPassword("");
-        router.replace('/')
+        
+        router.replace('/Home')
       } else {
         console.log('Sign in is cancelled by user');
       }
@@ -170,8 +161,8 @@ export default function Signin({
               />
             </Pressable>
           </View>
-          <Pressable onPress={onGoRecovery}>
-            <Text style={styles.recoveryText}>Recovery Password</Text>
+          <Pressable onPress={() => router.push('/RecoverPassword')}>
+            <Text style={styles.recoveryText}>Recover Password</Text>
           </Pressable>
         </View>
 
@@ -202,7 +193,7 @@ export default function Signin({
         <Text style={styles.footerText}>
           Don’t Have An Account?
         </Text>
-        <Pressable onPress={onGoSignup}>
+        <Pressable onPress={() => router.push('/Signup')}>
           <Text style={styles.signupForFreeText}> Sign Up For Free</Text>
         </Pressable>
       </View>

@@ -5,8 +5,8 @@ import useGetMe from '@/hooks/useGetMe';
 import { useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { isTokenExpired } from '@/hooks/isTokenExpired';
-import { Provider, useDispatch } from 'react-redux'
-import { store } from '@/Redux/store';
+import { Provider, useDispatch, useSelector } from 'react-redux'
+import { RootState, store } from '@/Redux/store';
 import { setUserData } from '@/Redux/userDataSlice';
 import { ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,43 +19,45 @@ if (!global.btoa) global.btoa = btoa;
 
 const RootLayout = () => {
   const dispatch = useDispatch()
-  const { data, isLoading, isPending, isFetched, refetch } = useGetMe()
   const [isAuthChecking, setIsAuthChecking] = useState(true)
+  const { value: isLoading } = useSelector((state: RootState) => state.isLoading)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     (async () => {
       try {
+        if (!mounted) return
         const token = await SecureStore.getItemAsync('token')
-        if (!token) return router.replace('/(splash)/SplashScreens')
-        const isExpired = isTokenExpired(token)
-        if (isExpired) {
-          await SecureStore.deleteItemAsync('token')
-          console.log('Token expired and deleted from layout');
-          dispatch(setUserData({ name: null, email: null }))
-          router.replace('/(splash)/SplashScreens')
+        if (!token) {
+          return router.replace('/(splash)/SplashScreens');
+        } else {
+          router.replace('/Home')
         }
-        else {
-          const res = await refetch();
-          dispatch(setUserData(res.data.data))
-          router.replace('/')
-        }
+
+
       } catch (err) {
-        console.log('Error: ', err);
+        console.log('Error from layout: ', err);
       } finally {
         setIsAuthChecking(false)
       }
     })()
-  }, [])
+  }, [mounted])
 
   return (
     <>
       <Stack
         screenOptions={{
-          headerShown: false
+          headerShown: false,
+          animation: "ios"
         }}
       >
         <Stack.Screen name="(splash)/SplashScreens" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/AuthScreens" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="Home" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack>
 
@@ -72,18 +74,16 @@ const RootLayout = () => {
             alignItems: "center",
             justifyContent: "center",
             backgroundColor: "white",
-
           }}>
             <NikeLoader />
-          </View>
-        )
+          </View>)
       }
     </>
   )
 }
 
 export default function _layout() {
-  const queryClient = new QueryClient();
+  const [queryClient] = useState(() => new QueryClient())
 
   return (
     <Provider store={store}>

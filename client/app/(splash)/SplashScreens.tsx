@@ -2,9 +2,12 @@ import { StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import OnboardingScreen from '@/components/Onboarding'
 import { useRouter } from 'expo-router'
+import { useDispatch } from 'react-redux'
+import { setIsLoadingFalse } from '@/Redux/isLoadingSlice'
 
 const SplashScreens = () => {
     const router = useRouter();
+    const dispatch = useDispatch()
     const [onboardingScreen, setOnboardingScreen] = useState(1)
 
     const onBoardingShoeImages = [
@@ -15,7 +18,7 @@ const SplashScreens = () => {
     ];
 
     useEffect(() => {
-
+        dispatch(setIsLoadingFalse())
     }, [])
 
 
@@ -46,7 +49,7 @@ const SplashScreens = () => {
                         title='Start Journey With Nike'
                         subtitle='Smart, Gorgeous & Fashionable Collection'
                         buttonText='Get Started'
-                        onPress={() => router.replace('/(auth)/AuthScreens')}
+                        onPress={() => router.replace('/(auth)')}
                     />
             }
         </>

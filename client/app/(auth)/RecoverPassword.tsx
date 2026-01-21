@@ -16,7 +16,7 @@ import { AntDesign, Ionicons } from "@expo/vector-icons";
 const { width, height } = Dimensions.get('window')
 const SCALE = width / 375;
 
-export default function RecoverPassword({ onGoSignin }: { onGoSignin: () => void }) {
+export default function RecoverPassword() {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
@@ -36,7 +36,7 @@ export default function RecoverPassword({ onGoSignin }: { onGoSignin: () => void
             showsVerticalScrollIndicator={false}
         >
             <View style={styles.innerContainer}>
-                <TouchableOpacity style={styles.backButton} onPress={onGoSignin}>
+                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                     <Ionicons name="chevron-back" size={24} color="black" />
                 </TouchableOpacity>
 

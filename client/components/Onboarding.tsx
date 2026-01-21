@@ -30,11 +30,12 @@ const Onboarding: React.FC<SlideProps> = ({ onboard, imageSrc, zoomImg, title, s
             <SafeAreaView style={styles.container}>
 
                 <View style={{
-                    marginHorizontal: 20,
+                    // marginHorizontal: 20,
                     marginTop: 50,
                     position: 'relative',
                     zIndex: 50,
                     flex: 1,
+                    width: '90%',
                     display: 'flex',
                     justifyContent: 'space-evenly'
                 }}>
@@ -99,7 +100,7 @@ const Onboarding: React.FC<SlideProps> = ({ onboard, imageSrc, zoomImg, title, s
                     marginTop: 10 * SCALE,
                     marginBottom: 15 * SCALE,
                     maxWidth: 325 * SCALE,
-                    width: '100%',
+                    width: '90%',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
