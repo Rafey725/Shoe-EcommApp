@@ -12,22 +12,27 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
+import { useDispatch } from "react-redux";
+import { setRecoveryEmail } from "@/Redux/recoveryEmailSlice";
 
 const { width, height } = Dimensions.get('window')
 const SCALE = width / 375;
 
 export default function RecoverPassword() {
     const router = useRouter();
-    const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const dispatch = useDispatch()
+    const [email, setEmail] = useState("rafeyabdul425@gmail.com");
+    const [error, setError] = useState('')
     const [focusedField, setFocusedField] = useState('')
 
     const handleSubmit = () => {
         console.log(email);
-        console.log(password);
+        if (email.length === 0) {
+            return setError('Email is required')
+        }
+        dispatch(setRecoveryEmail(email))
         setEmail("");
-        setPassword("");
+        router.push('/recover/otp')
     }
 
     return (
@@ -57,6 +62,13 @@ export default function RecoverPassword() {
                     />
                 </View>
 
+                {/* Error message */}
+                {error &&
+                    <View style={[styles.errorMsgCont, {}]}>
+                        <Text style={[styles.errorMsgText]}>{error}</Text>
+                    </View>
+                }
+
                 <Pressable onPress={handleSubmit} style={styles.recoverPassButton}>
                     <Text style={styles.recoverPassText}>Continue</Text>
                 </Pressable>
@@ -71,7 +83,6 @@ const styles = StyleSheet.create({
         height: '100%',
         backgroundColor: "#f8f9fa",
         alignItems: "center",
-        justifyContent: 'space-between',
         paddingBottom: 50
     },
     innerContainer: {
@@ -106,6 +117,24 @@ const styles = StyleSheet.create({
         color: "#222",
         marginBottom: 8,
         marginLeft: 7
+    },
+    errorMsgCont: {
+        backgroundColor: "#FDECEC",   // light red
+        borderRadius: 12,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        borderWidth: 1,
+        borderColor: "#F5A3A3",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+    },
+    errorMsgText: {
+        flex: 1,
+        fontSize: 13 * SCALE,
+        lineHeight: 18,
+        color: "#B42318",
+        fontWeight: "600",
     },
     input: {
         backgroundColor: "#ffffffbe",

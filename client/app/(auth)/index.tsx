@@ -63,9 +63,6 @@ export default function Signin() {
       console.log(data.message);
       if (res.status === 401) { return setError('Invalid email or password') }
       else { setError('') }
-
-      // dispatch(setUserData({ name: data.name, email: data.email }))
-
       setEmail("");
       setPassword("");
       router.replace('/Home')
@@ -161,7 +158,7 @@ export default function Signin() {
               />
             </Pressable>
           </View>
-          <Pressable onPress={() => router.push('/RecoverPassword')}>
+          <Pressable onPress={() => router.push('/recover/')}>
             <Text style={styles.recoveryText}>Recover Password</Text>
           </Pressable>
         </View>
@@ -267,7 +264,6 @@ const styles = StyleSheet.create({
     color: "#B42318",
     fontWeight: "600",
   },
-
   focusedField: {
     borderColor: '#5b9ee1',
   },

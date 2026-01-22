@@ -5,8 +5,12 @@ import { users } from "../schemas/userSchema";
 import { eq } from "drizzle-orm";
 import bcrypt from 'bcrypt'
 import { validataInfo } from "../middlewares/validateInfo";
-import createAccessToken from "../createAccessToken";
+import createAccessToken from "../functions/createAccessToken";
 import { OAuth2Client } from 'google-auth-library';
+import generateOTP from '../functions/genertateOTP';
+import sendOTPEmail from '../functions/sendOTPEmail';
+import { storeOTP } from '../functions/storeOTP';
+import { redis } from '../functions/redisClient';
 // import 
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID;
@@ -25,7 +29,7 @@ router.get('/me', async (req, res) => {
         const user = await db.select().from(users).where(eq(users.id, decoded.userId))
 
         // setTimeout(() => {
-            res.status(200).json({ message: 'User data fetched successfully', data: { name: user[0].name, email: user[0].email } })
+        res.status(200).json({ message: 'User data fetched successfully', data: { name: user[0].name, email: user[0].email } })
         // }, 10000)
     } catch (err) {
         console.log('Error from getting me request: ', err);
@@ -62,7 +66,7 @@ router.post('/login', async (req, res) => {
     if (!isPasswordValid) return res.status(401).json({ message: 'Invalid credentials' })
 
     // generate a jwt token
-    const token = createAccessToken(user.id)
+    const token = createAccessToken({ userId: user.id })
 
     res.status(200).json({ message: 'User is authenticated', token: token })
 })
@@ -100,7 +104,7 @@ router.post('/google_signin', async (req, res) => {
             .from(users)
             .where(eq(users.provider_user_id, sub));
         if (googleUser.length > 0) {
-            const token = createAccessToken(googleUser[0].id)
+            const token = createAccessToken({ userId: googleUser[0].id })
             return res.status(200).json({ message: 'User authorized', token: token })
         }
 
@@ -115,7 +119,7 @@ router.post('/google_signin', async (req, res) => {
                 .set({ auth_provider: 'google', provider_user_id: sub })
                 .where(eq(users.id, emailUser[0].id))
                 .returning();
-            const token = createAccessToken(updatedUser.id)
+            const token = createAccessToken({ userId: updatedUser.id })
             return res.status(200).json({ message: "User authorized", token: token });
         }
 
@@ -131,13 +135,54 @@ router.post('/google_signin', async (req, res) => {
             .returning();
         console.log(newUser);
 
-        const token = createAccessToken(newUser.id)
+        const token = createAccessToken({ userId: newUser.id })
         return res.status(200).json({ message: 'User created', token: token })
 
     } catch (err) {
         console.log(err);
         return res.status(500).json({ message: 'Server issue' })
     }
+})
+
+router.post('/requestOTP', async (req, res) => {
+    const { OTP, hashedOTP } = await generateOTP(6);
+    await storeOTP(req.body.email, hashedOTP)
+    await sendOTPEmail({ email: req.body.email, otp: OTP })
+
+    res.status(200).json({ message: 'OTP is sent to the email' })
+})
+
+router.post('/verifyOTP', async (req, res) => {
+    const key = `otp:${req.body.email.toLocaleLowerCase()}`
+
+    const rawData = await redis.get<string>(key)
+    if (!rawData) return res.status(410).json({ message: 'OTP expired' });
+
+
+    const data =
+        typeof rawData === "string"
+            ? (JSON.parse(rawData) as { otp: string; attempts: number | string })
+            : (rawData as { otp: string; attempts: number | string });
+
+    const hashedOtp = data.otp;
+
+    const ok = await bcrypt.compare(req.body.otp, hashedOtp)
+    if (!ok) return res.status(401).json({ message: 'Invalid OTP' });
+
+    if (ok) await redis.del(key);
+
+    // const resetToken = createAccessToken()
+    return res.status(200).json({ message: 'OTP verified' })
+})
+
+router.put('/newPassword', async (req, res) => {
+    const email = req.body.email;
+    const hashedPass = await bcrypt.hash(req.body.pass, 12);
+
+    await db
+        .update(users)
+        .set({ password_hash: hashedPass })
+        .where(eq(users.email, email))
 })
 
 export default router

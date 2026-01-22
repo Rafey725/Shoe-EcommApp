@@ -5,7 +5,6 @@ import { isTokenExpired } from "./isTokenExpired";
 import { useRouter } from "expo-router";
 
 export default function useGetMe() {
-    const router = useRouter()
     return useQuery({
         queryKey: ['me'],
         queryFn: async () => {

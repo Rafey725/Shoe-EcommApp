@@ -18,13 +18,10 @@ const Home = () => {
   const { name, email } = useSelector((state: RootState) => state.userData)
   const { data, isLoading, isPending, error } = useGetMe();
   const [isAuthChecking, setIsAuthChecking] = useState(false)
-
-  console.log('Rendered the home tab');
-
+  
   useEffect(() => {
     if (data?.data) {
       dispatch(setUserData(data?.data))
-      console.log('res from query:', data?.data);
     }
   }, [data])
 
@@ -74,7 +71,7 @@ const Home = () => {
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text style={{ color: 'black' }}>{user ? `Welcome ${user.name} (${user.email})` : 'Loading...'}</Text>
 
-        <TouchableOpacity onPress={() => router.push('/details')} style={{ marginTop: 30, borderWidth: 2, paddingHorizontal: 10, paddingVertical: 5 }}>
+        <TouchableOpacity onPress={() => router.push('/Details')} style={{ marginTop: 30, borderWidth: 2, paddingHorizontal: 10, paddingVertical: 5 }}>
           <Text>Go to details tab</Text>
         </TouchableOpacity>
 
