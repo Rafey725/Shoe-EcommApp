@@ -94,7 +94,7 @@ export default function Signup() {
             >
               <Ionicons
                 name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={20}
+                size={23}
                 color="#555"
               />
             </Pressable>

@@ -11,7 +11,7 @@ import generateOTP from '../functions/genertateOTP';
 import sendOTPEmail from '../functions/sendOTPEmail';
 import { storeOTP } from '../functions/storeOTP';
 import { redis } from '../functions/redisClient';
-// import 
+import createResetToken from '../functions/createResetToken';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID;
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID)
@@ -66,7 +66,7 @@ router.post('/login', async (req, res) => {
     if (!isPasswordValid) return res.status(401).json({ message: 'Invalid credentials' })
 
     // generate a jwt token
-    const token = createAccessToken({ userId: user.id })
+    const token = createAccessToken(user.id)
 
     res.status(200).json({ message: 'User is authenticated', token: token })
 })
@@ -104,7 +104,7 @@ router.post('/google_signin', async (req, res) => {
             .from(users)
             .where(eq(users.provider_user_id, sub));
         if (googleUser.length > 0) {
-            const token = createAccessToken({ userId: googleUser[0].id })
+            const token = createAccessToken(googleUser[0].id)
             return res.status(200).json({ message: 'User authorized', token: token })
         }
 
@@ -119,7 +119,7 @@ router.post('/google_signin', async (req, res) => {
                 .set({ auth_provider: 'google', provider_user_id: sub })
                 .where(eq(users.id, emailUser[0].id))
                 .returning();
-            const token = createAccessToken({ userId: updatedUser.id })
+            const token = createAccessToken(updatedUser.id)
             return res.status(200).json({ message: "User authorized", token: token });
         }
 
@@ -135,7 +135,7 @@ router.post('/google_signin', async (req, res) => {
             .returning();
         console.log(newUser);
 
-        const token = createAccessToken({ userId: newUser.id })
+        const token = createAccessToken(newUser.id)
         return res.status(200).json({ message: 'User created', token: token })
 
     } catch (err) {
@@ -171,18 +171,29 @@ router.post('/verifyOTP', async (req, res) => {
 
     if (ok) await redis.del(key);
 
-    // const resetToken = createAccessToken()
-    return res.status(200).json({ message: 'OTP verified' })
+    const token = createResetToken(req.body.email)
+    return res.status(200).json({ message: 'OTP verified', resetToken: token })
 })
 
 router.put('/newPassword', async (req, res) => {
-    const email = req.body.email;
-    const hashedPass = await bcrypt.hash(req.body.pass, 12);
+    try {
+        const decoded = jwt.verify(req.body.resetToken, process.env.JWT_SECRET) as { email: string, iat?: number, exp?: number }
+        if (!decoded.email) return res.status(401).json({ message: 'INVALID_TOKEN' })
 
-    await db
-        .update(users)
-        .set({ password_hash: hashedPass })
-        .where(eq(users.email, email))
+        const hashedPass = await bcrypt.hash(req.body.pass, 12);
+
+        const [updatedUser] = await db
+            .update(users)
+            .set({ password_hash: hashedPass })
+            .where(eq(users.email, decoded.email))
+            .returning();
+
+        const token = createAccessToken(updatedUser.id)
+
+        res.status(200).json({ message: 'Password reset', token: token })
+    } catch (err) {
+        console.log('Invalid or expired token');
+    }
 })
 
 export default router

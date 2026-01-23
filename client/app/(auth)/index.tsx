@@ -81,6 +81,8 @@ export default function Signin() {
         const data = await response.json()
         console.log(data.message);
 
+        console.log(res.data.user.photo);
+        
         if (data.token) {
           SecureStore.setItemAsync('token', data.token)
           console.log('Token stored');
@@ -153,7 +155,7 @@ export default function Signin() {
             >
               <Ionicons
                 name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={20}
+                size={23}
                 color="#555"
               />
             </Pressable>

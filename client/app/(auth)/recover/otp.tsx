@@ -3,6 +3,7 @@ import useVerifyOTP from '@/hooks/useVerifyOTP';
 import { RootState } from '@/Redux/store';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import * as SecureStore from 'expo-secure-store'
 import {
     View,
     Text,
@@ -72,10 +73,10 @@ const OtpScreen: React.FC = () => {
 
         console.log(res.status, data.message);
 
-
-        // if (res.status === 200) {
-            router.push('/recover/new-password')
-        // }
+        if (res.status === 200) {
+            await SecureStore.setItemAsync('resetToken', data.resetToken)
+            router.push('/recover/newPassword')
+        }
     }
 
     return (

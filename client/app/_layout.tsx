@@ -33,8 +33,7 @@ const RootLayout = () => {
         if (!mounted) return
         const token = await SecureStore.getItemAsync('token')
         if (!token) {
-          // return router.replace('/(splash)/SplashScreens');
-          return router.replace('/(auth)')
+          return router.replace('/(splash)/SplashScreens');
         } else {
           router.replace('/Home')
         }
@@ -56,11 +55,11 @@ const RootLayout = () => {
           animation: "ios"
         }}
       >
-        {/* <Stack.Screen name="(splash)/SplashScreens" options={{ headerShown: false }} /> */}
+        <Stack.Screen name="(splash)/SplashScreens" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        {/* <Stack.Screen name="Home" options={{ headerShown: false }} />
+        <Stack.Screen name="Home" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="Details" options={{ headerShown: false }} /> */}
+        <Stack.Screen name="Details" options={{ headerShown: false }} />
       </Stack>
 
       {
