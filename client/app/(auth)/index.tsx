@@ -80,9 +80,6 @@ export default function Signin() {
         const response = await googleMutateAsync({ endpoint: 'google_signin', idToken: res.data.idToken })
         const data = await response.json()
         console.log(data.message);
-
-        console.log(res.data.user.photo);
-        
         if (data.token) {
           SecureStore.setItemAsync('token', data.token)
           console.log('Token stored');

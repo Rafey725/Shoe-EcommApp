@@ -7,5 +7,6 @@ export const users = pgTable('users', {
     password_hash: text('password_hash'),
     created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     auth_provider: text('auth_provider').notNull().default('email'),
-    provider_user_id: text('provider_user_id')
+    provider_user_id: text('provider_user_id'),
+    profile_url: text('profile_url')
 })

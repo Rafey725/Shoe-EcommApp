@@ -2,7 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     name: '',
-    email: ''
+    email: '',
+    profile_url: ''
 }
 
 const userDataSlice = createSlice({
@@ -12,6 +13,7 @@ const userDataSlice = createSlice({
         setUserData: (state, action) => {
             state.name = action.payload.name;
             state.email = action.payload.email;
+            state.profile_url = action.payload.profile_url;
         }
     }
 })

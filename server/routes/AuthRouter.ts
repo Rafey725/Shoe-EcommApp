@@ -29,7 +29,7 @@ router.get('/me', async (req, res) => {
         const user = await db.select().from(users).where(eq(users.id, decoded.userId))
 
         // setTimeout(() => {
-        res.status(200).json({ message: 'User data fetched successfully', data: { name: user[0].name, email: user[0].email } })
+        res.status(200).json({ message: 'User data fetched successfully', data: { name: user[0].name, email: user[0].email, profile_url: user[0].profile_url } })
         // }, 10000)
     } catch (err) {
         console.log('Error from getting me request: ', err);
@@ -116,7 +116,7 @@ router.post('/google_signin', async (req, res) => {
         if (emailUser.length > 0) {
             const [updatedUser] = await db
                 .update(users)
-                .set({ auth_provider: 'google', provider_user_id: sub })
+                .set({ auth_provider: 'google', provider_user_id: sub, profile_url:picture })
                 .where(eq(users.id, emailUser[0].id))
                 .returning();
             const token = createAccessToken(updatedUser.id)
@@ -130,7 +130,8 @@ router.post('/google_signin', async (req, res) => {
                 name: name,
                 email: email,
                 auth_provider: 'google',
-                provider_user_id: sub
+                provider_user_id: sub,
+                profile_url: picture
             })
             .returning();
         console.log(newUser);
