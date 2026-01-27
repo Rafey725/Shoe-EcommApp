@@ -1,8 +1,6 @@
 import { API_BASE_URL } from "@/config/api";
 import { useQuery } from "@tanstack/react-query";
 import * as SecureStore from 'expo-secure-store';
-import { isTokenExpired } from "./isTokenExpired";
-import { useRouter } from "expo-router";
 
 export default function useGetMe() {
     return useQuery({

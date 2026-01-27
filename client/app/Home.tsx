@@ -1,9 +1,9 @@
-import { Animated, Dimensions, FlatList, Image, ImageBackground, ImageSourcePropType, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Animated, Dimensions, Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../Redux/store'
-import { useFocusEffect, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import useGetMe from '@/hooks/useGetMe'
 import * as SecureStore from 'expo-secure-store'
 import { setUserData } from '@/Redux/userDataSlice'
@@ -12,6 +12,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { blueThemeColor, whiteText } from '@/constants/themeColors'
 import { grayText } from '@/constants/themeColors'
 import { setShoesDetail } from '@/Redux/shoesDetail'
+import useGetShoes from '@/hooks/useGetShoes'
 
 const { width, height } = Dimensions.get('window')
 const scaleW = width / 375;
@@ -43,7 +44,7 @@ const Home = () => {
     }
   }, [data])
 
-  const user = data?.data
+  // const user = data?.data
 
   useEffect(() => {
     if (error?.message === 'TOKEN_EXPIRED') {
@@ -156,42 +157,52 @@ const Home = () => {
   // Popular shoes
   type Shoe = {
     id: string;
-    name: string;
-    price: string;
-    image: ImageSourcePropType;
+    shoe_name: string;
     badge?: string;
-    desc: string,
+    price: string;
+    description: string,
+    shoe_image_url: string;
     scale: number
   };
 
-  const popularShoes: Shoe[] = [
-    {
-      id: "1",
-      name: "Nike Jordan",
-      price: "$493.00",
-      badge: "BEST SELLER",
-      desc: 'Air Jordan is an American brand of basketball shoes athletic, casual, and style clothing produced by Nike....',
-      image: require('@/assets/Popular-Shoes/nike-jordan-upscayl.png'),
-      scale: 1
-    },
-    {
-      id: "2",
-      name: "Nike Air Max",
-      price: "$897.99",
-      badge: "BEST SELLER",
-      desc: 'Air Jordan is an American brand of basketball shoes athletic, casual, and style clothing produced by Nike....',
-      image: require('@/assets/Popular-Shoes/nike-air-max-upscayl.png'),
-      scale: 1
-    },
-  ];
+  const [isImageLoading, setIsImageLoading] = useState(true)
+  const { data: shoes, isLoading: isShoesLoading, isPending: isShoesPending, isError } = useGetShoes()
+
+  const [popularShoes, setPopularShoes] = useState<Shoe[]>([])
+
+  useEffect(() => {
+    setPopularShoes(shoes?.shoes)
+  }, [shoes])
+
+
+  // const popularShoes: Shoe[] = [
+  //   {
+  //     id: "1",
+  //     name: "Nike Jordan",
+  //     price: "$493.00",
+  //     badge: "BEST SELLER",
+  //     desc: 'Air Jordan is an American brand of basketball shoes athletic, casual, and style clothing produced by Nike....',
+  //     image: require('@/assets/Popular-Shoes/nike-jordan-upscayl.png'),
+  //     scale: 1
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Nike Air Max",
+  //     price: "$897.99",
+  //     badge: "BEST SELLER",
+  //     desc: 'Air Jordan is an American brand of basketball shoes athletic, casual, and style clothing produced by Nike....',
+  //     image: require('@/assets/Popular-Shoes/nike-air-max-upscayl.png'),
+  //     scale: 1
+  //   },
+  // ];
 
   const goToDetailsTab = (shoe: Shoe) => {
     const shoesDetail = {
       badge: shoe.badge,
-      shoeName: shoe.name,
+      shoeName: shoe.shoe_name,
       price: shoe.price,
-      desc: shoe.desc,
-      shoeImage: shoe.image
+      desc: shoe.description,
+      shoeImage: shoe.shoe_image_url
     }
     dispatch(setShoesDetail(shoesDetail))
     router.push('/Details')
@@ -422,32 +433,48 @@ const Home = () => {
                 {/* Popular Shoes Header */}
                 <View style={styles.header}>
                   <Text style={styles.headerTitle}>Popular Shoes</Text>
-                  <Text style={styles.seeAll}>See all</Text>
+                  <Pressable onPress={() => router.push('/SeeAllShoes')}>
+                    <Text style={styles.seeAll}>See all</Text>
+                  </Pressable>
                 </View>
 
-                <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={[{ display: 'flex', flexDirection: 'row' }, popularShoes
+                  ? { justifyContent: 'space-between' }
+                  : { justifyContent: 'center' }
+                ]}>
                   {/* Popular Shoes List */}
-                  {popularShoes.map((shoe, idx) => {
-                    return (
-                      <Pressable
-                        key={idx}
-                        onPress={() => goToDetailsTab(shoe)}
-                        style={styles.shoeCard}>
-                        <Image source={shoe.image} style={[styles.cardImage, { transform: [{ scale: shoe.scale }] }]} />
+                  {popularShoes
+                    ? popularShoes.map((shoe, idx) => {
+                      return (
+                        <Pressable
+                          key={idx}
+                          onPress={() => goToDetailsTab(shoe)}
+                          style={styles.shoeCard}>
+                          {isImageLoading &&
+                            <ActivityIndicator style={{ position: 'absolute', left: '50%', top: '20%' }} />
+                          }
+                          <Image
+                            source={{ uri: shoe.shoe_image_url }}
+                            style={[styles.cardImage, { transform: [{ scale: shoe.scale }] }]}
+                            onLoadStart={() => setIsImageLoading(true)}
+                            onLoadEnd={() => setIsImageLoading(false)}
+                            onError={() => setIsImageLoading(false)} />
 
-                        {shoe.badge && (
-                          <Text style={styles.badge}>{shoe.badge}</Text>
-                        )}
+                          {shoe.badge && (
+                            <Text style={styles.badge}>{shoe.badge}</Text>
+                          )}
 
-                        <Text style={styles.cardTitle}>{shoe.name}</Text>
-                        <Text style={styles.price}>{shoe.price}</Text>
+                          <Text style={styles.cardTitle}>{shoe.shoe_name}</Text>
+                          <Text style={styles.price}>{shoe.price}</Text>
 
-                        <TouchableOpacity style={styles.addButton}>
-                          <Image source={require('@/assets/plus-icon.png')} />
-                        </TouchableOpacity>
-                      </Pressable>
-                    )
-                  })}
+                          <TouchableOpacity style={styles.addButton}>
+                            <Image source={require('@/assets/plus-icon.png')} />
+                          </TouchableOpacity>
+                        </Pressable>
+                      )
+                    })
+                    : <ActivityIndicator />
+                  }
                 </View>
               </View>
 
@@ -456,7 +483,9 @@ const Home = () => {
                 {/* New Arrivals Header */}
                 <View style={[styles.header]}>
                   <Text style={styles.headerTitle}>New Arrivals</Text>
-                  <Text style={styles.seeAll}>See all</Text>
+                  <Pressable onPress={() => router.push('/SeeAllShoes')}>
+                    <Text style={styles.seeAll}>See all</Text>
+                  </Pressable>
                 </View>
 
                 {/* New Arrival Card */}

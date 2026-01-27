@@ -12,7 +12,8 @@ import {
     TouchableOpacity,
     ScrollView,
     Dimensions,
-    ImageSourcePropType
+    ImageSourcePropType,
+    ActivityIndicator
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
@@ -32,9 +33,9 @@ const galleryImages: any = [
 export default function Details() {
     const { badge, shoeName, price, desc, shoeImage } = useSelector((state: RootState) => state.shoesDetail.detail)
     const [selectedSize, setSelectedSize] = useState<number>(40)
+    const [isImageLoading, setIsImageLoading] = useState(true)
 
     return (
-
         <SafeAreaView style={{ flex: 1, backgroundColor: '#f8f9fa', }} edges={['top']}>
             <View style={styles.container}>
                 {/* Header */}
@@ -53,9 +54,15 @@ export default function Details() {
 
                 {/* Shoe Image */}
                 <View style={styles.imageWrapper}>
+                    {isImageLoading &&
+                        <ActivityIndicator style={{ position: 'absolute', left: '45%', top: '20%' }} />
+                    }
                     <ExpoImage
                         source={shoeImage}
                         style={styles.mainImage}
+                        onLoadStart={() => setIsImageLoading(true)}
+                        onLoadEnd={() => setIsImageLoading(false)}
+                        onError={() => setIsImageLoading(false)}
                     />
 
                     {/* Slider Indicator */}
@@ -118,7 +125,7 @@ export default function Details() {
                     <View style={styles.bottomRow}>
                         <View>
                             <Text style={styles.priceLabel}>Price</Text>
-                            <Text style={styles.price}>$849.69</Text>
+                            <Text style={styles.price}>{price}</Text>
                         </View>
 
                         <TouchableOpacity style={styles.addBtn}>
@@ -158,7 +165,7 @@ const styles = StyleSheet.create({
 
     mainImage: {
         width: 233,
-        aspectRatio: 1.8,     
+        aspectRatio: 1.8,
     },
 
     slider: {
