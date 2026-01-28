@@ -6,7 +6,8 @@ const initialState = {
         shoeName: '',
         price: '',
         desc: '',
-        shoeImage: require('@/assets/Popular-Shoes/nike-air-max.png')
+        shoeImage: require('@/assets/Popular-Shoes/nike-air-max.png'),
+        scale: 0
     }
 }
 

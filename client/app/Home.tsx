@@ -13,6 +13,9 @@ import { blueThemeColor, whiteText } from '@/constants/themeColors'
 import { grayText } from '@/constants/themeColors'
 import { setShoesDetail } from '@/Redux/shoesDetail'
 import useGetShoes from '@/hooks/useGetShoes'
+import { setShoes } from '@/Redux/allShoes'
+import { Image as ExpoImage } from 'expo-image'
+import { addToCart } from '@/Redux/cart'
 
 const { width, height } = Dimensions.get('window')
 const scaleW = width / 375;
@@ -156,11 +159,11 @@ const Home = () => {
 
   // Popular shoes
   type Shoe = {
-    id: string;
+    id?: string;
     shoe_name: string;
     badge?: string;
     price: string;
-    description: string,
+    description?: string,
     shoe_image_url: string;
     scale: number
   };
@@ -171,30 +174,10 @@ const Home = () => {
   const [popularShoes, setPopularShoes] = useState<Shoe[]>([])
 
   useEffect(() => {
-    setPopularShoes(shoes?.shoes)
+    if (!shoes?.shoes) return
+    setPopularShoes([shoes?.shoes[0], shoes?.shoes[1]])
+    dispatch(setShoes(shoes?.shoes))
   }, [shoes])
-
-
-  // const popularShoes: Shoe[] = [
-  //   {
-  //     id: "1",
-  //     name: "Nike Jordan",
-  //     price: "$493.00",
-  //     badge: "BEST SELLER",
-  //     desc: 'Air Jordan is an American brand of basketball shoes athletic, casual, and style clothing produced by Nike....',
-  //     image: require('@/assets/Popular-Shoes/nike-jordan-upscayl.png'),
-  //     scale: 1
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "Nike Air Max",
-  //     price: "$897.99",
-  //     badge: "BEST SELLER",
-  //     desc: 'Air Jordan is an American brand of basketball shoes athletic, casual, and style clothing produced by Nike....',
-  //     image: require('@/assets/Popular-Shoes/nike-air-max-upscayl.png'),
-  //     scale: 1
-  //   },
-  // ];
 
   const goToDetailsTab = (shoe: Shoe) => {
     const shoesDetail = {
@@ -202,10 +185,32 @@ const Home = () => {
       shoeName: shoe.shoe_name,
       price: shoe.price,
       desc: shoe.description,
-      shoeImage: shoe.shoe_image_url
+      shoeImage: shoe.shoe_image_url,
+      scale: shoe.scale
     }
     dispatch(setShoesDetail(shoesDetail))
     router.push('/Details')
+  }
+
+  // Add to cart functionality
+  type CartItem = {
+    shoe_name: string,
+    price: string,
+    shoe_image_url: string,
+    amount: number
+  }
+
+  const { cartItems } = useSelector((state: RootState) => state.cart)
+
+  const handleAddToCart = (shoe: Shoe) => {
+    const detail = {
+      shoe_name: shoe.shoe_name,
+      price: shoe.price,
+      shoe_image_url: shoe.shoe_image_url,
+      amount: 1
+    }
+    dispatch(addToCart(detail))
+    console.log('added');
   }
 
   return (
@@ -443,7 +448,7 @@ const Home = () => {
                   : { justifyContent: 'center' }
                 ]}>
                   {/* Popular Shoes List */}
-                  {popularShoes
+                  {popularShoes.length > 0
                     ? popularShoes.map((shoe, idx) => {
                       return (
                         <Pressable
@@ -453,12 +458,14 @@ const Home = () => {
                           {isImageLoading &&
                             <ActivityIndicator style={{ position: 'absolute', left: '50%', top: '20%' }} />
                           }
-                          <Image
+                          <ExpoImage
                             source={{ uri: shoe.shoe_image_url }}
                             style={[styles.cardImage, { transform: [{ scale: shoe.scale }] }]}
                             onLoadStart={() => setIsImageLoading(true)}
                             onLoadEnd={() => setIsImageLoading(false)}
-                            onError={() => setIsImageLoading(false)} />
+                            onError={() => setIsImageLoading(false)}
+                            contentFit='contain'
+                          />
 
                           {shoe.badge && (
                             <Text style={styles.badge}>{shoe.badge}</Text>
@@ -467,7 +474,7 @@ const Home = () => {
                           <Text style={styles.cardTitle}>{shoe.shoe_name}</Text>
                           <Text style={styles.price}>{shoe.price}</Text>
 
-                          <TouchableOpacity style={styles.addButton}>
+                          <TouchableOpacity onPress={() => handleAddToCart(shoe)} style={styles.addButton}>
                             <Image source={require('@/assets/plus-icon.png')} />
                           </TouchableOpacity>
                         </Pressable>
@@ -562,51 +569,42 @@ const styles = StyleSheet.create({
   },
   container: {
   },
-
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: 5
   },
-
   headerTitle: {
     fontSize: 16,
     fontWeight: "700",
     color: "#1A1A1A",
   },
-
   seeAll: {
     fontSize: 14,
     color: blueThemeColor,
   },
-
   shoeCard: {
     backgroundColor: "#FFFFFF",
     width: 157 * scaleW,
-    height: 200 * scaleH,
     borderRadius: 20,
     paddingHorizontal: 10,
     marginTop: 16 * scaleH,
+    paddingBottom: 10 * scaleH,
   },
-
   cardImage: {
     width: 125,
-    height: 104,
-    resizeMode: "contain",
+    height: 104
   },
-
   badge: {
     fontSize: 12,
     color: blueThemeColor,
   },
-
   cardTitle: {
     fontSize: 16,
     fontWeight: "700",
     color: "#1A1A1A",
   },
-
   price: {
     marginTop: 5 * scaleH,
     fontSize: 14,
@@ -626,7 +624,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
   newArrivalCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 20,

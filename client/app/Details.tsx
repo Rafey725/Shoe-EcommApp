@@ -31,9 +31,11 @@ const galleryImages: any = [
 ]
 
 export default function Details() {
-    const { badge, shoeName, price, desc, shoeImage } = useSelector((state: RootState) => state.shoesDetail.detail)
+    const { badge, shoeName, price, desc, shoeImage, scale } = useSelector((state: RootState) => state.shoesDetail.detail)
     const [selectedSize, setSelectedSize] = useState<number>(40)
     const [isImageLoading, setIsImageLoading] = useState(true)
+
+    console.log(shoeName, scale);
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#f8f9fa', }} edges={['top']}>
@@ -59,15 +61,16 @@ export default function Details() {
                     }
                     <ExpoImage
                         source={shoeImage}
-                        style={styles.mainImage}
+                        style={[styles.mainImage, { transform: [{ scale: scale }] }]}
                         onLoadStart={() => setIsImageLoading(true)}
                         onLoadEnd={() => setIsImageLoading(false)}
                         onError={() => setIsImageLoading(false)}
+                        contentFit='contain'
                     />
 
                     {/* Slider Indicator */}
                     <Image source={require('@/assets/shoe-frame.png')} style={{
-                        width: '75%', transform: [{ translateY: -50 * scaleH }]
+                        width: '75%', transform: [{ translateY: -40 * scaleH }]
                     }}
                         resizeMode='contain'
                     />
@@ -165,7 +168,7 @@ const styles = StyleSheet.create({
 
     mainImage: {
         width: 233,
-        aspectRatio: 1.8,
+        aspectRatio: 1.8
     },
 
     slider: {

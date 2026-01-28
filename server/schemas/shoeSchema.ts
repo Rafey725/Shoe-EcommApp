@@ -1,4 +1,4 @@
-import { bigserial, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import { bigserial, real, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
 export const popular_shoes = pgTable('popular_shoes', {
     id: bigserial('id', { mode: 'number' }).primaryKey(),
@@ -7,5 +7,6 @@ export const popular_shoes = pgTable('popular_shoes', {
     price: text('price').notNull(),
     description: text('description'),
     shoe_image_path: text('shoe_image_path').notNull(),
-    created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
+    created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    scale: real('scale').default(1)
 })

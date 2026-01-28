@@ -26,7 +26,7 @@ router.get('/popular_shoes', async (req, res) => {
                     price: shoe.price,
                     description: shoe.description,
                     shoe_image_url: data.signedUrl,
-                    scale: 1
+                    scale: shoe.scale
                 }
             })
         )
