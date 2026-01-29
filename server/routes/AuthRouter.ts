@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import express from "express";
+import express, { Request } from "express";
 import { db } from "../db";
 import { users } from "../schemas/userSchema";
 import { eq } from "drizzle-orm";
@@ -12,22 +12,22 @@ import sendOTPEmail from '../functions/sendOTPEmail';
 import { storeOTP } from '../functions/storeOTP';
 import { redis } from '../functions/redisClient';
 import createResetToken from '../functions/createResetToken';
+import { authMiddleware } from '../middlewares/authMiddleware';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID;
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID)
 
 const router = express.Router();
 
-router.get('/me', async (req, res) => {
-    if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) return res.status(401).json({ message: 'No token provided' })
-    const token = req.headers.authorization.split(' ')[1]
+interface myRequest extends Request {
+    user: {
+        id: number
+    }
+}
+
+router.get('/me', authMiddleware, async (req: myRequest, res) => {
     try {
-        if (!process.env.JWT_SECRET) return res.status(500).json({ message: 'Server error' })
-        const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: number, iat?: number, exp?: number }
-
-        if (!decoded.userId) return res.status(401).json({ message: 'INVALID_TOKEN' })
-        const user = await db.select().from(users).where(eq(users.id, decoded.userId))
-
+        const user = await db.select().from(users).where(eq(users.id, req.user.id))
         // setTimeout(() => {
         res.status(200).json({ message: 'User data fetched successfully', data: { name: user[0].name, email: user[0].email, profile_url: user[0].profile_url } })
         // }, 10000)
@@ -116,7 +116,7 @@ router.post('/google_signin', async (req, res) => {
         if (emailUser.length > 0) {
             const [updatedUser] = await db
                 .update(users)
-                .set({ auth_provider: 'google', provider_user_id: sub, profile_url:picture })
+                .set({ auth_provider: 'google', provider_user_id: sub, profile_url: picture })
                 .where(eq(users.id, emailUser[0].id))
                 .returning();
             const token = createAccessToken(updatedUser.id)

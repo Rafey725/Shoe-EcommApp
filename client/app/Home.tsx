@@ -192,16 +192,7 @@ const Home = () => {
     router.push('/Details')
   }
 
-  // Add to cart functionality
-  type CartItem = {
-    shoe_name: string,
-    price: string,
-    shoe_image_url: string,
-    amount: number
-  }
-
-  const { cartItems } = useSelector((state: RootState) => state.cart)
-
+  // ADD TO CART FUNCTIONALITY
   const handleAddToCart = (shoe: Shoe) => {
     const detail = {
       shoe_name: shoe.shoe_name,
@@ -210,7 +201,6 @@ const Home = () => {
       amount: 1
     }
     dispatch(addToCart(detail))
-    console.log('added');
   }
 
   return (

@@ -2,6 +2,7 @@ import express from 'express'
 import { popular_shoes } from '../schemas/shoeSchema'
 import { db } from '../db'
 import { supabaseAdmin } from '../supabaseClient'
+import { createSignedUrl } from '../functions/createSignedUrl'
 
 const router = express.Router()
 
@@ -13,11 +14,7 @@ router.get('/popular_shoes', async (req, res) => {
 
         const shoesWtihImages = await Promise.all(
             shoesResult.map(async (shoe) => {
-                const { data, error } = await supabaseAdmin.storage
-                    .from('Images')
-                    .createSignedUrl(shoe.shoe_image_path, 60 * 60)
-
-                if (error) throw error
+                const signedUrl = await createSignedUrl(shoe.shoe_image_path)
 
                 return {
                     id: shoe.id,
@@ -25,7 +22,7 @@ router.get('/popular_shoes', async (req, res) => {
                     badge: shoe.badge,
                     price: shoe.price,
                     description: shoe.description,
-                    shoe_image_url: data.signedUrl,
+                    shoe_image_url: signedUrl,
                     scale: shoe.scale
                 }
             })

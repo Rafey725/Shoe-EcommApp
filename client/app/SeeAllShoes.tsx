@@ -7,6 +7,7 @@ import { RootState } from '@/Redux/store';
 import { blueThemeColor } from '@/constants/themeColors';
 import { Image as ExpoImage } from 'expo-image';
 import { setShoesDetail } from '@/Redux/shoesDetail';
+import { addToCart } from '@/Redux/cart';
 
 const { width, height } = Dimensions.get('window')
 const scaleW = width / 375;
@@ -35,10 +36,21 @@ const SeeAllShoes = () => {
             price: shoe.price,
             desc: shoe.description,
             shoeImage: shoe.shoe_image_url,
-            scale:shoe.scale
+            scale: shoe.scale
         }
         dispatch(setShoesDetail(shoesDetail))
         router.push('/Details')
+    }
+
+    // ADD TO CART FUNCTIONALITY
+    const handleAddToCart = (shoe: Shoe) => {
+        const detail = {
+            shoe_name: shoe.shoe_name,
+            price: shoe.price,
+            shoe_image_url: shoe.shoe_image_url,
+            amount: 1
+        }
+        dispatch(addToCart(detail))
     }
 
     return (
@@ -104,7 +116,7 @@ const SeeAllShoes = () => {
                                     <Text style={styles.cardTitle}>{shoe.shoe_name}</Text>
                                     <Text style={styles.price}>{shoe.price}</Text>
 
-                                    <TouchableOpacity style={styles.addButton}>
+                                    <TouchableOpacity onPress={() => handleAddToCart(shoe)} style={styles.addButton}>
                                         <Image source={require('@/assets/plus-icon.png')} />
                                     </TouchableOpacity>
                                 </Pressable>

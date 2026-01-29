@@ -19,24 +19,31 @@ const cartSlice = createSlice({
             if (state.cartItems.length === 0) {
                 state.cartItems.push({ ...action.payload, amount: 1 })
             } else {
-                const alreadyAdded = state.cartItems.some(item => {
+                let item = state.cartItems.find(item => {
                     return item.shoe_name.toLowerCase() === action.payload.shoe_name.toLowerCase()
                 })
-
-                if (alreadyAdded) {
-                    state.cartItems.forEach(item => {
-                        if (item.shoe_name.toLowerCase() === action.payload.shoe_name.toLowerCase()) {
-                            item.amount++
-                        }
-                    })
-                }
-                else {
+                if (item) {
+                    item.amount += 1;
+                } else {
                     state.cartItems.push({ ...action.payload, amount: 1 })
                 }
             }
+        },
+        removeFromCart: (state, action) => {
+            state.cartItems.forEach((item, idx) => {
+                if (item.shoe_name.toLowerCase() === action.payload.shoe_name.toLowerCase()) {
+                    if (item.amount === 1) state.cartItems.splice(idx, 1)
+                    else item.amount -= 1;
+                }
+            })
+        },
+        deleteFromCart: (state, action) => {
+            state.cartItems.forEach((item, idx) => {
+                if (item.shoe_name.toLowerCase() === action.payload.shoe_name.toLowerCase()) state.cartItems.splice(idx, 1)
+            })
         }
     }
 })
 
-export const { addToCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, deleteFromCart } = cartSlice.actions;
 export default cartSlice.reducer;
